@@ -22,7 +22,7 @@
 #
 # @param firewall The firewall configurations. Defaults to an empty hash.
 #
-# @param version The version of haproxy. Defaults to 'present'.
+# @param version The version of haproxy. Defaults to '3.2.0'.
 #
 # @param acme_contact The contact email for Let's Encrypt ACME. Defaults to 'ops@enableit.dk'.
 #
@@ -56,27 +56,12 @@ class role::web::haproxy (
       Array[Stdlib::Port],
       Stdlib::Port
   ]]                            $firewall               = {},
-  Eit_types::Version            $version                = 'latest',
+  Eit_types::Version            $version                = '3.2.0',
   Eit_types::Email              $acme_contact           = 'ops@enableit.dk',
   Boolean                       $log_compressed         = true,
   Boolean                       $__blendable,
 ) inherits role::web {
   confine($configure == 'manual', !$manual_config, 'Manual configuration need static haproxy config file')
 
-  class { 'profile::web::haproxy':
-    domains            => $domains,
-    listens            => $listens,
-    ddos_protection    => $ddos_protection,
-    https              => $https,
-    http               => $http,
-    use_hsts           => $use_hsts,
-    use_lets_encrypt   => $use_lets_encrypt,
-    manual_config      => $manual_config,
-    version            => $version,
-    acme_contact       => $acme_contact,
-    configure          => $configure,
-    encryption_ciphers => $encryption_ciphers,
-    firewall           => $firewall,
-    log_compressed     => $log_compressed,
-  }
+  contain profile::web::haproxy
 }

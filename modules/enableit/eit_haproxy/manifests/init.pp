@@ -32,7 +32,7 @@
 #
 # @param encryption_ciphers The encryption ciphers to use. Defaults to 'Modern'.
 #
-# @param version The version of haproxy. Defaults to 'latest'.
+# @param version The version of haproxy. Defaults to '3.2.0'.
 #
 # @param acme_contact The contact email for Let's Encrypt ACME. Defaults to 'ops@enableit.dk'.
 #
@@ -81,7 +81,7 @@ class eit_haproxy (
   Enum['http','tcp']            $mode               = 'http',
   Array[Stdlib::IP::Address,1]  $listen_on          = ['0.0.0.0'],
   Enum['Modern','Intermediate'] $encryption_ciphers = 'Modern',
-  Eit_types::Version            $version            = 'latest',
+  Eit_types::Version            $version            = '3.2.0',
   Eit_types::Email              $acme_contact       = 'ops@enableit.dk',
   Enum['production','staging']  $ca_type            = 'production',
   Eit_types::Service_Ensure     $service_ensure     = true,
@@ -102,7 +102,7 @@ class eit_haproxy (
   if $configure == 'auto' {
     $_is_ubuntu = $facts['os']['name'] == 'Ubuntu'
 
-    $_wants_haproxy3 = String($version) =~ /^\d+(\.\d+)*$/ and versioncmp(String($version), '3.0.0') >= 0
+    $_wants_haproxy3 = String($version) =~ /^\d+(\.\d+)*$/ and versioncmp(String($version), '3.2.0') >= 0
 
     if $_wants_haproxy3 and !$_is_ubuntu {
       fail("HAProxy 3.x is only supported on Ubuntu, not ${facts['os']['name']}")
@@ -125,15 +125,13 @@ class eit_haproxy (
         # Newer Ubuntu LTS (26.04+) ships HAProxy 3.x in stock repos,
         # so the PPA is unnecessary there.
         if $facts['os']['release']['major'] =~ /^24/ {
-          contain apt
-
           $haproxy_lts_version = '3.2'
           apt::ppa { "ppa:vbernat/haproxy-${haproxy_lts_version}": }
 
           Class['apt'] -> Apt::Ppa["ppa:vbernat/haproxy-${haproxy_lts_version}"] -> Class['eit_haproxy::basic_config']
         }
       } else {
-        warning('HAProxy 3.x auto-native ACME path is only supported on Ubuntu')
+        warning('HAProxy 3.2.x auto-native ACME path is only supported on Ubuntu')
       }
     }
 
